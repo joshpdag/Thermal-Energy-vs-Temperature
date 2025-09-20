@@ -755,7 +755,7 @@
                         const energyElement = document.getElementById(`energy${index + 1}`);
                         
                         if (tempElement) {
-                            tempElement.textContent = `${avgTemp.toFixed(1)}°C`;
+                            tempElement.textContent = `${avgTemp.toFixed(1)}°F`;
                         }
                         if (energyElement) {
                             energyElement.textContent = `${Math.round(totalKE)} KE units`;
@@ -835,6 +835,7 @@
                     ctx.fillText('20°F', 15, height - 45);
                 }
                 
+                // Fixed x-axis labels (always shows 0s to 600s)
                 ctx.fillText('0s', 50, height - 15);
                 ctx.fillText('300s', width/2 - 10, height - 15);
                 ctx.fillText('600s', width - 50, height - 15);
@@ -842,14 +843,17 @@
                 ctx.fillText('Temperature', 10, 15);
                 
                 if (this.graphData.length > 1) {
+                    const maxDisplayPoints = 600; // Show last 600 data points (20 minutes)
+                    const startIndex = Math.max(0, this.graphData.length - maxDisplayPoints);
+                    
                     this.containers.forEach((container, containerIndex) => {
                         ctx.strokeStyle = this.colors[containerIndex];
                         ctx.lineWidth = 3;
                         ctx.beginPath();
                         
-                        for (let i = 0; i < this.graphData.length; i++) {
-                            const timeInSeconds = i;
-                            const x = 50 + (timeInSeconds / 600) * (width - 70);
+                        for (let i = startIndex; i < this.graphData.length; i++) {
+                            const relativeIndex = i - startIndex;
+                            const x = 50 + (relativeIndex / maxDisplayPoints) * (width - 70);
                             
                             let normalizedTemp;
                             if (this.autoScale && this.graphData.length > 0) {
@@ -877,7 +881,7 @@
                             }
                             
                             const y = height - 50 - (normalizedTemp * (height - 70));
-                            if (i === 0) ctx.moveTo(x, y);
+                            if (i === startIndex) ctx.moveTo(x, y);
                             else ctx.lineTo(x, y);
                         }
                         ctx.stroke();
