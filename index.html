@@ -162,7 +162,7 @@
         #particleCanvas {
             border: 3px solid #ddd;
             border-radius: 10px;
-            background: white;
+            background-color: #ffffff !important;
             display: block;
             margin: 0 auto;
         }
@@ -1056,26 +1056,30 @@
                 const coolingMode = coolingModeSelect ? coolingModeSelect.value : 'continuous';
                 if (coolingMode !== 'continuous' || !this.running) return;
                 
+                this.ctx.save(); // Save state before drawing arrows
+                
                 this.containers.forEach((container, index) => {
                     const x = index * 200 + 100;
                     const y = 80;
                     
                     const flowRate = this.energyFlows[index];
-                    const arrowThickness = Math.max(1, Math.abs(flowRate) * 10000);
-                    const arrowLength = 30 + Math.abs(flowRate) * 50000;
+                    // Limit arrow dimensions to reasonable values
+                    const arrowThickness = Math.max(1, Math.min(5, Math.abs(flowRate) * 10000));
+                    const arrowLength = Math.max(20, Math.min(50, 30 + Math.abs(flowRate) * 50000));
                     
                     // Calculate average temperature to determine flow direction
                     const avgTemp = container.atoms.length > 0 ? 
                         container.atoms.reduce((sum, atom) => sum + atom.temperature, 0) / container.atoms.length : 70;
                     const roomTemp = 70; // Room temperature is 70°F
                     
-                    this.ctx.strokeStyle = '#ff6b6b';
-                    this.ctx.fillStyle = '#ff6b6b';
-                    this.ctx.lineWidth = arrowThickness;
                     this.ctx.globalAlpha = 0.7;
+                    this.ctx.lineWidth = arrowThickness;
                     
                     if (avgTemp > roomTemp) {
                         // Energy flowing OUT (cooling) - arrow pointing up
+                        this.ctx.strokeStyle = '#ff6b6b';
+                        this.ctx.fillStyle = '#ff6b6b';
+                        
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y);
                         this.ctx.lineTo(x, y - arrowLength);
@@ -1104,14 +1108,30 @@
                         this.ctx.closePath();
                         this.ctx.fill();
                     }
-                    
-                    this.ctx.globalAlpha = 1;
                 });
+                
+                this.ctx.restore(); // Restore state after drawing arrows
             }
             
             draw() {
-                // Clear canvas and reset all drawing state
+                // Clear canvas and explicitly reset all properties
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Explicit full canvas property reset
+                this.ctx.globalAlpha = 1.0;
+                this.ctx.globalCompositeOperation = 'source-over';
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 1;
+                this.ctx.lineCap = 'butt';
+                this.ctx.lineJoin = 'miter';
+                this.ctx.font = '10px sans-serif';
+                this.ctx.textAlign = 'start';
+                this.ctx.textBaseline = 'alphabetic';
+                
+                // Fill entire canvas with white to ensure clean background
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
                 this.ctx.save(); // Save the clean state
                 
                 this.containers.forEach((container, index) => {
