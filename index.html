@@ -287,8 +287,7 @@
             <p>
                 <strong>1.</strong> Watch four containers with different volumes<br>
                 <strong>2.</strong> Choose hot water (cools down) or cool water (warms up)<br>
-                <strong>3.</strong> Observe particle colors showing kinetic energy levels<br>
-                <strong>4.</strong> Notice the math: Total KE Units ÷ Atoms = Temperature
+                <strong>3.</strong> Observe particle colors showing kinetic energy levels
             </p>
         </div>
         
@@ -790,6 +789,7 @@
                 
                 ctx.clearRect(0, 0, width, height);
                 
+                // Draw grid lines
                 ctx.strokeStyle = '#e0e0e0';
                 ctx.lineWidth = 1;
                 for (let i = 0; i <= 10; i++) {
@@ -799,6 +799,7 @@
                     ctx.stroke();
                 }
                 
+                // Draw axes
                 ctx.strokeStyle = '#333';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -810,8 +811,8 @@
                 ctx.fillStyle = '#666';
                 ctx.font = '12px Arial';
                 
+                // Y-axis labels
                 if (this.autoScale && this.graphData.length > 0) {
-                    // Auto-scale based on data
                     let minTemp = 999, maxTemp = -999;
                     this.graphData.forEach(dataPoint => {
                         dataPoint.forEach(temp => {
@@ -829,65 +830,75 @@
                     ctx.fillText(`${((maxTemp + minTemp) / 2).toFixed(0)}°F`, 15, height/2);
                     ctx.fillText(`${minTemp.toFixed(0)}°F`, 15, height - 45);
                 } else {
-                    // Fixed scale
                     ctx.fillText('200°F', 10, 25);
                     ctx.fillText('110°F', 15, height/2);
                     ctx.fillText('20°F', 15, height - 45);
                 }
                 
-                // Fixed x-axis labels (always shows 0s to 600s)
+                // X-axis labels
                 ctx.fillText('0s', 50, height - 15);
                 ctx.fillText('300s', width/2 - 10, height - 15);
                 ctx.fillText('600s', width - 50, height - 15);
                 ctx.fillText('Time', width/2 - 15, height - 10);
                 ctx.fillText('Temperature', 10, 15);
                 
+                // Draw data lines
                 if (this.graphData.length > 1) {
-                    const maxDisplayPoints = 600; // Show last 600 data points (20 minutes)
-                    const startIndex = Math.max(0, this.graphData.length - maxDisplayPoints);
+                    const graphWidth = width - 70; // Available width for graph
+                    const maxTime = 600; // 600 seconds = 20 minutes
                     
                     this.containers.forEach((container, containerIndex) => {
                         ctx.strokeStyle = this.colors[containerIndex];
                         ctx.lineWidth = 3;
                         ctx.beginPath();
                         
-                        for (let i = startIndex; i < this.graphData.length; i++) {
-                            const relativeIndex = i - startIndex;
-                            const x = 50 + (relativeIndex / maxDisplayPoints) * (width - 70);
+                        let hasStarted = false;
+                        
+                        for (let i = 0; i < this.graphData.length; i++) {
+                            // Fixed x-position based on actual time
+                            const timeInSeconds = i; // Since we record every second
+                            const x = 50 + (timeInSeconds / maxTime) * graphWidth;
                             
-                            let normalizedTemp;
-                            if (this.autoScale && this.graphData.length > 0) {
-                                // Use auto-scale range
-                                let minTemp = 999, maxTemp = -999;
-                                this.graphData.forEach(dataPoint => {
-                                    dataPoint.forEach(temp => {
-                                        minTemp = Math.min(minTemp, temp);
-                                        maxTemp = Math.max(maxTemp, temp);
+                            // Only draw points that fit within our time window
+                            if (x <= width - 20) {
+                                let normalizedTemp;
+                                if (this.autoScale && this.graphData.length > 0) {
+                                    let minTemp = 999, maxTemp = -999;
+                                    this.graphData.forEach(dataPoint => {
+                                        dataPoint.forEach(temp => {
+                                            minTemp = Math.min(minTemp, temp);
+                                            maxTemp = Math.max(maxTemp, temp);
+                                        });
                                     });
-                                });
+                                    
+                                    const tempRange = maxTemp - minTemp;
+                                    const padding = tempRange * 0.1;
+                                    minTemp -= padding;
+                                    maxTemp += padding;
+                                    
+                                    const value = this.graphData[i][containerIndex];
+                                    normalizedTemp = Math.max(0, Math.min(1, (value - minTemp) / (maxTemp - minTemp)));
+                                } else {
+                                    const tempRange = 200 - 20;
+                                    const value = this.graphData[i][containerIndex];
+                                    normalizedTemp = Math.max(0, Math.min(1, (value - 20) / tempRange));
+                                }
                                 
-                                const tempRange = maxTemp - minTemp;
-                                const padding = tempRange * 0.1;
-                                minTemp -= padding;
-                                maxTemp += padding;
+                                const y = height - 50 - (normalizedTemp * (height - 70));
                                 
-                                const value = this.graphData[i][containerIndex];
-                                normalizedTemp = Math.max(0, Math.min(1, (value - minTemp) / (maxTemp - minTemp)));
-                            } else {
-                                // Fixed scale (20°F to 200°F)
-                                const tempRange = 200 - 20;
-                                const value = this.graphData[i][containerIndex];
-                                normalizedTemp = Math.max(0, Math.min(1, (value - 20) / tempRange));
+                                if (!hasStarted) {
+                                    ctx.moveTo(x, y);
+                                    hasStarted = true;
+                                } else {
+                                    ctx.lineTo(x, y);
+                                }
                             }
-                            
-                            const y = height - 50 - (normalizedTemp * (height - 70));
-                            if (i === startIndex) ctx.moveTo(x, y);
-                            else ctx.lineTo(x, y);
                         }
                         ctx.stroke();
                     });
                 }
                 
+                // Legend
                 this.containers.forEach((container, index) => {
                     const legendY = 30 + index * 25;
                     ctx.fillStyle = this.colors[index];
