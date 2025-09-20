@@ -1062,10 +1062,9 @@
                     const x = index * 200 + 100;
                     const y = 80;
                     
-                    const flowRate = this.energyFlows[index];
-                    // Limit arrow dimensions to reasonable values
-                    const arrowThickness = Math.max(1, Math.min(5, Math.abs(flowRate) * 10000));
-                    const arrowLength = Math.max(20, Math.min(50, 30 + Math.abs(flowRate) * 50000));
+                    // Make arrows much more conservative
+                    const arrowThickness = 2; // Fixed thickness
+                    const arrowLength = 25; // Fixed length
                     
                     // Calculate average temperature to determine flow direction
                     const avgTemp = container.atoms.length > 0 ? 
@@ -1080,15 +1079,17 @@
                         this.ctx.strokeStyle = '#ff6b6b';
                         this.ctx.fillStyle = '#ff6b6b';
                         
+                        // Draw arrow shaft
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y);
                         this.ctx.lineTo(x, y - arrowLength);
                         this.ctx.stroke();
                         
+                        // Draw arrowhead
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y - arrowLength);
-                        this.ctx.lineTo(x - 8, y - arrowLength + 15);
-                        this.ctx.lineTo(x + 8, y - arrowLength + 15);
+                        this.ctx.lineTo(x - 6, y - arrowLength + 12);
+                        this.ctx.lineTo(x + 6, y - arrowLength + 12);
                         this.ctx.closePath();
                         this.ctx.fill();
                     } else if (avgTemp < roomTemp) {
@@ -1096,15 +1097,17 @@
                         this.ctx.strokeStyle = '#4a90e2';
                         this.ctx.fillStyle = '#4a90e2';
                         
+                        // Draw arrow shaft
                         this.ctx.beginPath();
-                        this.ctx.moveTo(x, y - 40);
-                        this.ctx.lineTo(x, y - 40 + arrowLength);
+                        this.ctx.moveTo(x, y - 10);
+                        this.ctx.lineTo(x, y - 10 + arrowLength);
                         this.ctx.stroke();
                         
+                        // Draw arrowhead
                         this.ctx.beginPath();
-                        this.ctx.moveTo(x, y - 40 + arrowLength);
-                        this.ctx.lineTo(x - 8, y - 40 + arrowLength - 15);
-                        this.ctx.lineTo(x + 8, y - 40 + arrowLength - 15);
+                        this.ctx.moveTo(x, y - 10 + arrowLength);
+                        this.ctx.lineTo(x - 6, y - 10 + arrowLength - 12);
+                        this.ctx.lineTo(x + 6, y - 10 + arrowLength - 12);
                         this.ctx.closePath();
                         this.ctx.fill();
                     }
