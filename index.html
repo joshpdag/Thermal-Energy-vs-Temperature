@@ -279,7 +279,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🌡️ Volume vs Temperature Change</h1>
+        <h1>🌡️ Volume vs Temperature Change - UPDATED</h1>
         <p class="subtitle">Watch how different volumes of hot water cool down at different rates</p>
         
         <div class="info-panel">
@@ -340,11 +340,6 @@
                 <div class="control-group">
                     <label>Graph Display:</label>
                     <button id="togglePause">⏸️ PAUSE GRAPH</button>
-                </div>
-                
-                <div class="control-group">
-                    <label>Graph Scale:</label>
-                    <button id="scaleToggle">📏 AUTO SCALE</button>
                 </div>
             </div>
         </div>
@@ -530,7 +525,7 @@
                 this.graphData = [];
                 this.colors = ['#ff4444', '#4444ff', '#44ff44', '#ff44ff'];
                 this.graphPaused = false;
-                this.autoScale = true;
+                this.autoScale = false;
                 
                 this.initAtoms();
                 this.setupEventListeners();
@@ -607,13 +602,6 @@
                     this.graphPaused = !this.graphPaused;
                     document.getElementById('togglePause').textContent = 
                         this.graphPaused ? '▶️ RESUME GRAPH' : '⏸️ PAUSE GRAPH';
-                });
-                
-                document.getElementById('scaleToggle').addEventListener('click', () => {
-                    this.autoScale = !this.autoScale;
-                    document.getElementById('scaleToggle').textContent = 
-                        this.autoScale ? '📏 AUTO SCALE' : '📐 FIXED SCALE';
-                    this.drawGraph();
                 });
                 
                 document.getElementById('initialTemp').addEventListener('change', () => {
